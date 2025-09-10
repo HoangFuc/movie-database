@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import {
   View,
   Text,
@@ -11,23 +11,32 @@ import {
 import Icon from "react-native-vector-icons/Ionicons"
 import Dropdown from "../component/Dropdown"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { getListMovie } from "../libs/movie"
+import { useAppDispatch, useAppSelector } from "../redux/hooks"
+import { getListMovieByCategory, setSelectedCategory } from "../redux/slices/movie"
 
 const MovieApp = () => {
   const [search, setSearch] = useState("")
+  const selectedCategory = useAppSelector(state => state.movie.selectedCategory)
+  const listMovie = useAppSelector(state => state.movie.lists)
+  const loading = useAppSelector(state => state.movie.loading)
+  const dispatch = useAppDispatch()
 
-  const queryClient = useQueryClient()
-
-  // const query = useQuery({ queryKey: ['todos'], queryFn: getTodos })
-
+  useEffect(() => {
+    dispatch(getListMovieByCategory({category: selectedCategory, page: 1}))
+  }, [selectedCategory])
 
   const renderMovie = ({ item }) => (
     <View style={styles.movieCard}>
-      <Image source={{ uri: item.poster }} style={styles.poster} />
+      <Image 
+        source={{ uri: `https://image.tmdb.org/t/p/w500${item.poster_path}` }} 
+        style={styles.poster} 
+      />
       <View style={{ flex: 1 }}>
         <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.date}>{item.date}</Text>
+        <Text style={styles.date}>{item.release_date}</Text>
         <Text numberOfLines={2} style={styles.description}>
-          {item.description}
+          {item.overview}
         </Text>
       </View>
     </View>
@@ -43,8 +52,8 @@ const MovieApp = () => {
 
       <Dropdown
         label="Now Playing"
-        options={["Now Playing", "Upcoming", "Popular"]}
-        onSelect={(val) => console.log("Selected:", val)}
+        options={["now_playing", "upcoming", "popular"]}
+        onSelect={(val) => dispatch(setSelectedCategory(val))}
       />
 
       <Dropdown
@@ -65,9 +74,9 @@ const MovieApp = () => {
       </TouchableOpacity>
 
       <FlatList
-        data={[]}
+        data={listMovie}
         renderItem={renderMovie}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
         ListFooterComponent={
           <TouchableOpacity style={styles.loadMore}>
             <Text style={styles.loadMoreText}>Load More</Text>

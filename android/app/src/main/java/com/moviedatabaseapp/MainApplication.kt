@@ -10,6 +10,13 @@ import com.facebook.react.ReactPackage
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 
+import com.facebook.flipper.android.AndroidFlipperClient
+import com.facebook.flipper.android.utils.FlipperUtils
+import com.facebook.flipper.plugins.network.NetworkFlipperPlugin
+import com.facebook.flipper.plugins.network.FlipperOkhttpInterceptor
+import com.facebook.react.modules.network.NetworkingModule
+import okhttp3.OkHttpClient
+
 class MainApplication : Application(), ReactApplication {
 
   override val reactNativeHost: ReactNativeHost =
@@ -34,5 +41,18 @@ class MainApplication : Application(), ReactApplication {
   override fun onCreate() {
     super.onCreate()
     loadReactNative(this)
+    
+    if (BuildConfig.DEBUG && FlipperUtils.shouldEnableFlipper(this)) {
+      val client = AndroidFlipperClient.getInstance(this)
+      val networkFlipperPlugin = NetworkFlipperPlugin()
+      client.addPlugin(networkFlipperPlugin)
+      
+      // Configure React Native networking to use Flipper
+      NetworkingModule.setCustomClientBuilder { builder: OkHttpClient.Builder ->
+        builder.addNetworkInterceptor(FlipperOkhttpInterceptor(networkFlipperPlugin))
+      }
+      
+      client.start()
+    }
   }
 }
