@@ -8,24 +8,39 @@ import {
 } from "react-native"
 import { Icon } from "@rneui/themed";
 import { useAppDispatch } from "../redux/hooks";
-import { setSelectedCategory } from "../redux/slices/movie";
+import { setSelectedCategory, sortListBy } from "../redux/slices/movie";
+
+type Category = {
+  id: number,
+  name: string,
+  value: string,
+}
 
 type DropdownProps = {
   label: string
-  options: string[]
+  options: Category[]
   onSelect: (value: string) => void
+  type?: string
 };
 
-const Dropdown: React.FC<DropdownProps> = ({ label, options, onSelect }) => {
+const Dropdown: React.FC<DropdownProps> = ({ label, options, onSelect, type}) => {
   const [open, setOpen] = useState(false)
-  const [selected, setSelected] = useState(label)
+  const [categorySelected, setCategorySelected] = useState(label)
+  const [sortSelected, setSortSelected] = useState('Sort By')
   const dispatch = useAppDispatch()
+  const nameShowing = type == 'category' ? categorySelected : sortSelected
 
-  const handleSelect = (value: string) => {
-    dispatch(setSelectedCategory(value))
-    setSelected(value)
+  const handleSelect = (_item: Category) => {
+    dispatch(setSelectedCategory(_item))
+    setCategorySelected(_item?.name)
     setOpen(false)
-    onSelect(value)
+    onSelect(_item?.value)
+  }
+
+  const handleSort = (_item: Category) => {
+    dispatch(sortListBy(_item?.value))
+    setSortSelected(_item?.name)
+    setOpen(false)
   }
 
   return (
@@ -34,7 +49,7 @@ const Dropdown: React.FC<DropdownProps> = ({ label, options, onSelect }) => {
         style={styles.header}
         onPress={() => setOpen((prev) => !prev)}
       >
-        <Text style={styles.headerText}>{selected}</Text>
+        <Text style={styles.headerText}>{nameShowing}</Text>
         <Icon name="play" size={20} color="black" />
       </TouchableOpacity>
 
@@ -42,22 +57,22 @@ const Dropdown: React.FC<DropdownProps> = ({ label, options, onSelect }) => {
         <View style={styles.dropdown}>
           <FlatList
             data={options}
-            keyExtractor={(item) => item}
+            keyExtractor={(item, index) => `${item?.id}-${index}`}
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={[
                   styles.option,
-                  item === selected && styles.activeOption,
+                  item.name === nameShowing && styles.activeOption,
                 ]}
-                onPress={() => handleSelect(item)}
+                onPress={() => type == 'category' ? handleSelect(item) : handleSort(item)}
               >
                 <Text
                   style={[
                     styles.optionText,
-                    item === selected && styles.activeText,
+                    item.name === nameShowing && styles.activeText,
                   ]}
                 >
-                  {item}
+                  {item.name}
                 </Text>
               </TouchableOpacity>
             )}

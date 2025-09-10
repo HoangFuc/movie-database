@@ -1,8 +1,8 @@
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import MovieApp from './src/screen/HomeScreen';
+import { StatusBar, StyleSheet, useColorScheme } from 'react-native';
 import { Provider } from 'react-redux';
 import { store } from './src/redux/configStore';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import Navigation from './Navigator.tsx';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -13,7 +13,7 @@ function App() {
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
         <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-        <MovieApp />
+        <Navigation />
       </QueryClientProvider>
     </Provider>
   );

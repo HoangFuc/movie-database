@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import {
   View,
   Text,
@@ -8,12 +8,17 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native"
-import Icon from "react-native-vector-icons/Ionicons"
+import { useNavigation } from "@react-navigation/native"
+import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import Dropdown from "../component/Dropdown"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { getListMovie } from "../libs/movie"
 import { useAppDispatch, useAppSelector } from "../redux/hooks"
-import { getListMovieByCategory, setSelectedCategory } from "../redux/slices/movie"
+import { getListMovieByCategory, getMoreMovieByPage, Movie, setSelectedCategory } from "../redux/slices/movie"
+import Loading from "../component/Loading"
+
+type RootStackParamList = {
+  Main: undefined
+  Detail: { movie: Movie }
+}
 
 const MovieApp = () => {
   const [search, setSearch] = useState("")
@@ -21,16 +26,57 @@ const MovieApp = () => {
   const listMovie = useAppSelector(state => state.movie.lists)
   const loading = useAppSelector(state => state.movie.loading)
   const dispatch = useAppDispatch()
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
+
+  const categoryOptions = [
+    {
+      id: 1,
+      name: 'Now Playing',
+      value: 'now_playing'
+    },
+    {
+      id: 2,
+      name: 'Upcoming',
+      value: 'upcoming'
+    },
+    {
+      id: 3,
+      name: 'Popular',
+      value: 'popular'
+    }
+  ]
+
+  const sortOptions = [
+    {
+      id: 1,
+      name: 'By alphabetical order',
+      value: 'alpha'
+    },
+    {
+      id: 2,
+      name: 'By rating',
+      value: 'rating'
+    },
+    {
+      id: 3,
+      name: 'By release date',
+      value: 'release-date'
+    }
+  ]
 
   useEffect(() => {
-    dispatch(getListMovieByCategory({category: selectedCategory, page: 1}))
+    dispatch(getListMovieByCategory({ category: selectedCategory, page: 1 }))
   }, [selectedCategory])
 
-  const renderMovie = ({ item }) => (
-    <View style={styles.movieCard}>
-      <Image 
-        source={{ uri: `https://image.tmdb.org/t/p/w500${item.poster_path}` }} 
-        style={styles.poster} 
+  const onPressItem = (item: Movie) => {
+    navigation.navigate('Detail', { movie: item })
+  }
+
+  const renderMovie = ({ item }: { item: Movie }) => (
+    <TouchableOpacity style={styles.movieCard} onPress={() => onPressItem(item)}>
+      <Image
+        source={{ uri: `https://image.tmdb.org/t/p/w500${item.poster_path}` }}
+        style={styles.poster}
       />
       <View style={{ flex: 1 }}>
         <Text style={styles.title}>{item.title}</Text>
@@ -39,8 +85,12 @@ const MovieApp = () => {
           {item.overview}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   )
+
+  const loadMore = () => {
+    dispatch(getMoreMovieByPage({}))
+  }
 
   return (
     <View style={styles.container}>
@@ -52,13 +102,14 @@ const MovieApp = () => {
 
       <Dropdown
         label="Now Playing"
-        options={["now_playing", "upcoming", "popular"]}
+        options={categoryOptions}
         onSelect={(val) => dispatch(setSelectedCategory(val))}
+        type="category"
       />
 
       <Dropdown
         label="Sort by"
-        options={["By alphabetical order", "By rating", "By release date"]}
+        options={sortOptions}
         onSelect={(val) => console.log("Sort by:", val)}
       />
 
@@ -78,20 +129,16 @@ const MovieApp = () => {
         renderItem={renderMovie}
         keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
         ListFooterComponent={
-          <TouchableOpacity style={styles.loadMore}>
-            <Text style={styles.loadMoreText}>Load More</Text>
-          </TouchableOpacity>
+          loading
+            ?
+            <Loading style={styles.loadMore} />
+            :
+            <TouchableOpacity style={styles.loadMore} onPress={loadMore}>
+              <Text style={styles.loadMoreText}>Load More</Text>
+            </TouchableOpacity>
         }
       />
 
-      <View style={styles.bottomNav}>
-        <TouchableOpacity>
-          <Icon name="home" size={28} color="white" />
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Icon name="bookmark" size={28} color="white" />
-        </TouchableOpacity>
-      </View>
     </View>
   )
 }

@@ -1,5 +1,8 @@
-export const API_BASE_URL = `https://api.themoviedb.org/3/`
-const API_TOKEN = `Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5N2Q1YTk5YmI4NTc4ODQ0NTY5YjgzODlmOGZiZTM5YyIsIm5iZiI6MTc1NzQxODI2MC43Niwic3ViIjoiNjhjMDEzMTQ3ZDNhMTgwMzE5MDZhODJkIiwic2NvcGVzIjpbImFwaV9yZWFkIl0sInZlcnNpb24iOjF9.3da1puOyptNACgM50-ksLOYVetV18urOwP24wZLU5Oc`
+import { API_URL, ACCESS_TOKEN } from "@env"
+
+export const API_BASE_URL = API_URL
+const API_TOKEN = `Bearer ${ACCESS_TOKEN}`
+
 
 const defaultHeaders = {
   'accept': 'application/json',

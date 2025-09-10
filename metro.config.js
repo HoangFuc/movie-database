@@ -1,11 +1,21 @@
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 
-/**
- * Metro configuration
- * https://reactnative.dev/docs/metro
- *
- * @type {import('@react-native/metro-config').MetroConfig}
- */
-const config = {};
+const defaultConfig = getDefaultConfig(__dirname);
 
-module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+const config = {
+  reporter: {
+    update(event) {
+      // Forward Metro events
+      require('metro/src/lib/reporting').update(event);
+
+      // Forward console logs
+      if (event.type === 'log') {
+        event.data.forEach(msg => {
+          console.log(msg);
+        });
+      }
+    },
+  },
+};
+
+module.exports = mergeConfig(defaultConfig, config);
