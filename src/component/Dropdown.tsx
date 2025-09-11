@@ -48,7 +48,6 @@ const Dropdown: React.FC<DropdownProps> = ({ label, options, onSelect, type }) =
   }
 
   useEffect(() => {
-    console.log('======loading', loading)
     if (loading) {
       return
     } else {

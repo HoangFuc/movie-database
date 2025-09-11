@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { ChevronLeft, X, ArrowUp } from 'lucide-react-native';
+import { ChevronLeft, ArrowUp } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { HeaderImage } from '../component/HeaderImage';
 import { useQuery } from '@tanstack/react-query';
@@ -94,7 +94,6 @@ const WatchlistScreen = () => {
             </View>
           </View>
 
-          {/* Movie Cards */}
           <WatchListDetail sortBy={sortBy} ascending={ascending} />
         </View>
       </ScrollView>
