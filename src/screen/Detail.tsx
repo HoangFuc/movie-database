@@ -6,7 +6,6 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
-  StatusBar,
   Alert,
 } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialIcons'
@@ -24,9 +23,11 @@ import { CastList } from './movieDetail/CastList'
 import { Recommendations } from './movieDetail/Recommendations'
 import { addToWatchList } from '../libs/watchlist'
 import { HeaderImage } from '../component/HeaderImage'
+import { Bookmark } from 'lucide-react-native'
 
 const MovieDetailsScreen: React.FC = (props: any) => {
   const movie = props?.route?.params?.movie
+  const queryClient = useQueryClient()
   const { data: movieDetail } = useQuery<Movie>({
     queryKey: ['movie-detail', movie?.id],
     queryFn: () => getMovieDetail(Number(movie?.id))
@@ -35,6 +36,7 @@ const MovieDetailsScreen: React.FC = (props: any) => {
   const mutation = useMutation({
     mutationFn: addToWatchList,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['watchList-detail'] })
       Alert.alert("Success", "Add to watchlist success !")
     },
   })
@@ -97,9 +99,8 @@ const MovieDetailsScreen: React.FC = (props: any) => {
               </Text>
             </View>
 
-            {/* Watchlist Button */}
             <TouchableOpacity style={styles.watchlistButton} onPress={handleAddWatchList}>
-              <Icon name="bookmark" size={20} color="white" />
+              <Bookmark color='white' />
               <Text style={styles.watchlistText}>Add To Watchlist</Text>
             </TouchableOpacity>
           </View>

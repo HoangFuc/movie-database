@@ -3,21 +3,16 @@ import { apiGet } from "../../libs/api"
 import _ from "lodash"
 import { Alert } from "react-native"
 import { RootState } from "../configStore"
-
-export type Movie = {
-  id: number
-  title: string
-  overview: string
-  release_date: string
-  poster_path: string
-  vote_average: number
-}
+import { Movie } from "../../types"
 
 type MovieState = {
   lists: Movie[]
   selectedCategory: string
   loading: boolean
   page: number,
+  searchQuery: string
+  filteredLists: Movie[]
+  isSearching: boolean
 }
 
 const initialState: MovieState = {
@@ -25,6 +20,9 @@ const initialState: MovieState = {
   selectedCategory: 'now_playing',
   loading: false,
   page: 1,
+  searchQuery: '',
+  filteredLists: [],
+  isSearching: false,
 }
 
 const ALPHA = "alpha"
@@ -66,12 +64,34 @@ const movieSlice = createSlice({
     setSelectedCategory(state, action) {
       state.selectedCategory = action.payload
     },
+    searchMovies(state, action) {
+      const query = action.payload.toLowerCase().trim()
+      state.searchQuery = query
+
+      if (query === '') {
+        state.isSearching = false
+        state.filteredLists = []
+      } else {
+        state.isSearching = true
+        state.filteredLists = state.lists.filter(movie =>
+          movie.title.toLowerCase().includes(query)
+        )
+      }
+    },
+    clearSearch(state) {
+      state.searchQuery = ''
+      state.filteredLists = []
+      state.isSearching = false
+    }
   },
   extraReducers: (builder) => {
     builder
       .addCase(getListMovieByCategory.fulfilled, (state, action) => {
         state.loading = false
         state.lists = action.payload?.results || []
+        state.searchQuery = ''
+        state.filteredLists = []
+        state.isSearching = false
       })
       .addCase(getListMovieByCategory.rejected, (state, action) => {
         state.loading = false
@@ -83,8 +103,14 @@ const movieSlice = createSlice({
         const lists = state.lists
         const newList = _.concat(lists, action.payload?.results || [])
         state.loading = false
-        state.lists = newList
+        state.lists = _.uniqBy(newList, 'id')
         state.page++
+        if (state.isSearching && state.searchQuery) {
+          state.filteredLists = state.lists.filter(movie =>
+            movie.title.toLowerCase().includes(state.searchQuery) ||
+            movie.overview.toLowerCase().includes(state.searchQuery)
+          )
+        }
       })
       .addCase(getMoreMovieByPage.rejected, (state, action) => {
         state.loading = false
@@ -130,5 +156,6 @@ export const getMoreMovieByPage = createAsyncThunk(
   }
 )
 
-export const { sortListBy, setSelectedCategory } = movieSlice.actions
+
+export const { sortListBy, setSelectedCategory, searchMovies, clearSearch } = movieSlice.actions
 export default movieSlice.reducer

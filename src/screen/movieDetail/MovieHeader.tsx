@@ -1,7 +1,7 @@
 import { Movie } from "../../types";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Icon } from "@rneui/base";
 import { memo } from "react";
+import { ChevronLeft } from "lucide-react-native";
 
 interface MovieHeaderProps {
   movieDetail: Movie | undefined;
@@ -13,7 +13,7 @@ export const MovieHeader = memo(({ movieDetail, goBack }: MovieHeaderProps) => {
   return (
     <View style={styles.movieHeader}>
       <TouchableOpacity style={styles.backButton} onPress={goBack}>
-        <Icon name="chevron-left" size={24} color="white" />
+        <ChevronLeft color='white'/>
       </TouchableOpacity>
       <Text style={styles.movieTitle}>{movieDetail?.title ?? ""} ({yearRelease})</Text>
     </View>

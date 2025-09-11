@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import {
   View,
   Text,
@@ -6,9 +6,11 @@ import {
   StyleSheet,
   FlatList,
 } from "react-native"
-import { Icon } from "@rneui/themed";
-import { useAppDispatch } from "../redux/hooks";
-import { setSelectedCategory, sortListBy } from "../redux/slices/movie";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { sortListBy } from "../redux/slices/movie";
+import { ChevronRight, ChevronDown } from "lucide-react-native";
+import { getString, saveString, STORAGE_KEYS } from "../libs/storage";
+
 
 type Category = {
   id: number,
@@ -23,25 +25,55 @@ type DropdownProps = {
   type?: string
 };
 
-const Dropdown: React.FC<DropdownProps> = ({ label, options, onSelect, type}) => {
+const Dropdown: React.FC<DropdownProps> = ({ label, options, onSelect, type }) => {
   const [open, setOpen] = useState(false)
   const [categorySelected, setCategorySelected] = useState(label)
   const [sortSelected, setSortSelected] = useState('Sort By')
   const dispatch = useAppDispatch()
   const nameShowing = type == 'category' ? categorySelected : sortSelected
+  const loading = useAppSelector(state => state.movie.loading)
 
   const handleSelect = (_item: Category) => {
-    dispatch(setSelectedCategory(_item))
     setCategorySelected(_item?.name)
     setOpen(false)
     onSelect(_item?.value)
+    saveString(STORAGE_KEYS.category, _item?.value)
   }
 
   const handleSort = (_item: Category) => {
     dispatch(sortListBy(_item?.value))
     setSortSelected(_item?.name)
     setOpen(false)
+    saveString(STORAGE_KEYS.sortBy, _item?.value)
   }
+
+  useEffect(() => {
+    console.log('======loading', loading)
+    if (loading) {
+      return
+    } else {
+      const bootstrap = async () => {
+        const savedCategory = await getString(STORAGE_KEYS.category)
+        if (type === 'category') {
+          const found = options.find(o => o.value === savedCategory)
+          if (found) {
+            setCategorySelected(found.name)
+            onSelect(found.value)
+          }
+        }
+
+        if (!type) {
+          const savedSort = await getString(STORAGE_KEYS.sortBy)
+          const foundSort = options.find(o => o.value === savedSort)
+          if (foundSort) {
+            setSortSelected(foundSort.name)
+            dispatch(sortListBy(foundSort.value))
+          }
+        }
+      }
+      bootstrap()
+    }
+  }, [loading])
 
   return (
     <View style={styles.container}>
@@ -50,7 +82,7 @@ const Dropdown: React.FC<DropdownProps> = ({ label, options, onSelect, type}) =>
         onPress={() => setOpen((prev) => !prev)}
       >
         <Text style={styles.headerText}>{nameShowing}</Text>
-        <Icon name="play" size={20} color="black" />
+        {open ? <ChevronDown /> : <ChevronRight />}
       </TouchableOpacity>
 
       {open && (

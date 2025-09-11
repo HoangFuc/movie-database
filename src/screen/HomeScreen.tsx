@@ -12,20 +12,19 @@ import { useNavigation } from "@react-navigation/native"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import Dropdown from "../component/Dropdown"
 import { useAppDispatch, useAppSelector } from "../redux/hooks"
-import { getListMovieByCategory, getMoreMovieByPage, Movie, setSelectedCategory } from "../redux/slices/movie"
+import { getListMovieByCategory, getMoreMovieByPage, setSelectedCategory, searchMovies, clearSearch } from "../redux/slices/movie"
+import { Movie } from "../types"
 import Loading from "../component/Loading"
 import { HeaderImage } from "../component/HeaderImage"
 import { SafeAreaView } from "react-native-safe-area-context"
-
-type RootStackParamList = {
-  Main: undefined
-  Detail: { movie: Movie }
-}
+import { RootStackParamList } from "../types"
 
 const MovieApp = () => {
   const [search, setSearch] = useState("")
   const selectedCategory = useAppSelector(state => state.movie.selectedCategory)
   const listMovie = useAppSelector(state => state.movie.lists)
+  const filteredLists = useAppSelector(state => state.movie.filteredLists)
+  const isSearching = useAppSelector(state => state.movie.isSearching)
   const loading = useAppSelector(state => state.movie.loading)
   const dispatch = useAppDispatch()
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
@@ -94,49 +93,72 @@ const MovieApp = () => {
     dispatch(getMoreMovieByPage({}))
   }
 
+  const handleSearchPress = () => {
+    if (search.trim() === '') {
+      dispatch(clearSearch())
+    } else {
+      dispatch(searchMovies(search))
+    }
+  }
+
+  const displayList = isSearching ? filteredLists : listMovie
+
   return (
-    <SafeAreaView style={styles.container}>
-      <HeaderImage />
+      <SafeAreaView style={styles.container}>
+        <HeaderImage />
 
-      <Dropdown
-        label="Now Playing"
-        options={categoryOptions}
-        onSelect={(val) => dispatch(setSelectedCategory(val))}
-        type="category"
-      />
+        <Dropdown
+          label="Now Playing"
+          options={categoryOptions}
+          onSelect={(val) => dispatch(setSelectedCategory(val))}
+          type="category"
+        />
 
-      <Dropdown
-        label="Sort by"
-        options={sortOptions}
-        onSelect={(val) => console.log("Sort by:", val)}
-      />
+        <Dropdown
+          label="Sort by"
+          options={sortOptions}
+          onSelect={(val) => console.log("Sort by:", val)}
+        />
 
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Search..."
-        value={search}
-        onChangeText={setSearch}
-      />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Tìm kiếm phim..."
+          value={search}
+          onChangeText={(text) => setSearch(text)}
+        />
 
-      <TouchableOpacity style={styles.searchButton}>
-        <Text style={styles.searchButtonText}>Search</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.searchButton} onPress={handleSearchPress}>
+          <Text style={styles.searchButtonText}>Tìm kiếm</Text>
+        </TouchableOpacity>
 
-      <FlatList
-        data={listMovie}
-        renderItem={renderMovie}
-        keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
-        ListFooterComponent={
-          loading
-            ?
-            <Loading style={styles.loadMore} />
-            :
-            <TouchableOpacity style={styles.loadMore} onPress={loadMore}>
-              <Text style={styles.loadMoreText}>Load More</Text>
-            </TouchableOpacity>
-        }
-      />
-    </SafeAreaView>
+        {isSearching && filteredLists.length === 0 && search.trim() !== '' ? (
+          <View style={styles.noResultsContainer}>
+            <Text style={styles.noResultsText}>Không tìm thấy phim nào với từ khóa "{search}"</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={displayList}
+            renderItem={renderMovie}
+            keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
+            ListEmptyComponent={
+              loading ? (
+                <Loading style={{ paddingVertical: 40 }} color="#00AEEF" />
+              ) : null
+            }
+            ListFooterComponent={
+              !isSearching ? (
+                loading ? (
+                  <Loading style={styles.loadMore} />
+                ) : (
+                  <TouchableOpacity style={styles.loadMore} onPress={loadMore}>
+                    <Text style={styles.loadMoreText}>Load More</Text>
+                  </TouchableOpacity>
+                )
+              ) : null
+            }
+          />
+        )}
+      </SafeAreaView>
   )
 }
 
@@ -224,5 +246,16 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+  },
+  noResultsContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 50,
+  },
+  noResultsText: {
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
   },
 })

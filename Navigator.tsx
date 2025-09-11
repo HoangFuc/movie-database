@@ -4,6 +4,8 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import HomeScreen from "./src/screen/HomeScreen"
 import { NavigationContainer } from "@react-navigation/native"
 import Detail from "./src/screen/Detail"
+import WatchlistScreen from "./src/screen/WatchList"
+import { House, Bookmark } from "lucide-react-native"
 
 const Tab = createBottomTabNavigator()
 
@@ -22,15 +24,29 @@ const BottomTabs = () => {
         component={HomeScreen}
         options={{
           headerShown: false,
-          tabBarShowLabel: false
+          tabBarShowLabel: false,
+          tabBarIconStyle: {
+            marginTop: 15,
+            marginRight: 50
+          },
+          tabBarIcon: ({ focused }) => {
+            return <House color='white' />
+          }
         }}
       />
       <Tab.Screen
-        name="Person"
-        component={HomeScreen}
+        name="WatchList"
+        component={WatchlistScreen}
         options={{
           headerShown: false,
-          tabBarShowLabel: false
+          tabBarShowLabel: false,
+          tabBarIconStyle: {
+            marginTop: 15,
+            marginLeft: 40
+          },
+          tabBarIcon: ({ focused }) => {
+            return <Bookmark color='white' />
+          }
         }}
       />
     </Tab.Navigator>
