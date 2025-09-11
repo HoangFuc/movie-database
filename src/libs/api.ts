@@ -12,7 +12,7 @@ const defaultHeaders = {
 
 export const apiGet = async (endpoint: string, params?: Record<string, any>) => {
   try {
-    const url = new URL(`${API_BASE_URL}${endpoint}`)
+    const url = new URL(`${API_BASE_URL}/${endpoint}`)
     
     if (params) {
       Object.keys(params).forEach(key => {
@@ -45,22 +45,14 @@ export const apiPost = async (
   params?: Record<string, any>
 ) => {
   try {
-    const url = new URL(`${API_BASE_URL}${endpoint}`)
-    
-    if (params) {
-      Object.keys(params).forEach(key => {
-        if (params[key] !== undefined && params[key] !== null) {
-          url.searchParams.append(key, params[key].toString())
-        }
-      })
-    }
+    const url = `${API_BASE_URL}/${endpoint}`
 
     const response = await fetch(url.toString(), {
       method: 'POST',
       headers: defaultHeaders,
       body: body ? JSON.stringify(body) : undefined,
     })
-
+    
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }

@@ -81,9 +81,7 @@ const movieSlice = createSlice({
       })
       .addCase(getMoreMovieByPage.fulfilled, (state, action) => {
         const lists = state.lists
-        console.log('==============list', lists);
         const newList = _.concat(lists, action.payload?.results || [])
-        console.log('==============newList', newList);
         state.loading = false
         state.lists = newList
         state.page++

@@ -14,6 +14,8 @@ import Dropdown from "../component/Dropdown"
 import { useAppDispatch, useAppSelector } from "../redux/hooks"
 import { getListMovieByCategory, getMoreMovieByPage, Movie, setSelectedCategory } from "../redux/slices/movie"
 import Loading from "../component/Loading"
+import { HeaderImage } from "../component/HeaderImage"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 type RootStackParamList = {
   Main: undefined
@@ -93,12 +95,8 @@ const MovieApp = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={require('../assets/headerImage.jpg')}
-        style={styles.logo}
-        resizeMode="contain"
-      />
+    <SafeAreaView style={styles.container}>
+      <HeaderImage />
 
       <Dropdown
         label="Now Playing"
@@ -138,8 +136,7 @@ const MovieApp = () => {
             </TouchableOpacity>
         }
       />
-
-    </View>
+    </SafeAreaView>
   )
 }
 
@@ -150,12 +147,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     paddingHorizontal: 16,
-    paddingTop: 40,
-  },
-  logo: {
-    height: 50,
-    alignSelf: "center",
-    marginBottom: 20,
+    paddingTop: 20,
   },
   option: {
     flexDirection: "row",

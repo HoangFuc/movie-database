@@ -1,4 +1,4 @@
-import { API_BASE_URL, apiGet } from "./api"
+import { apiGet } from "./api"
 const language = 'en-US'
 
 export const getMovieDetail = async (movieID: number) => {
